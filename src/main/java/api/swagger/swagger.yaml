@@ -1,0 +1,243 @@
+#@author: Linus
+
+openapi: 3.0.0
+info:
+  title: Restful API
+  description: Parliament Sentiment Radar API for the group project of the programming course winter semester 2021 / 2022
+  contact:
+    name: Kevin Bönisch, Elias Wahl, Gabriele Marcantonio, Linus Reul
+    url: https://gitlab.texttechnologylab.org/gabrimarcan/gruppe_9_donnerstag_1_parliamentsentimentradar
+  version: 1.0.0
+servers:
+  - url: http://localhost:4567
+
+paths:
+  /fractions:
+    get:
+      tags:
+      - Parliament Sentiment Radar - Abschlussprojekt
+      summary: Returns all parties
+      operationId: getFractions()
+      consumes:
+      - application/json
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Failure
+
+  /parties:
+    get:
+      tags:
+      - Parliament Sentiment Radar - Abschlussprojekt
+      summary: Returns all parties
+      operationId: getParties()
+      consumes:
+      - application/json
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Failure
+
+  /protocols:
+    get:
+      tags:
+      - Parliament Sentiment Radar - Abschlussprojekt
+      summary: Returns all protocols
+      operationId: getProtocols()
+      consumes:
+      - application/json
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Failure
+
+  /speakers:
+    get:
+      tags:
+      - Parliament Sentiment Radar - Abschlussprojekt
+      summary: Returns all speakers and how many times they have given a speech
+      operationId: getSpeakers()
+      consumes:
+      - application/json
+      parameters:
+      - name: limit
+        in: query
+        description: The limit of the request (top n speakers are displayed)
+        required: false
+        type: Integer
+      - name: from
+        in: query
+        description: The start-date of the request (yyyy-MM-dd)
+        required: false
+        type: String
+      - name: to
+        in: query
+        description: The end-date of the request (yyyy-MM-dd)
+        required: false
+        type: String
+      - name: party
+        in: query
+        description: The party of the request
+        required: false
+        type: String
+      - name: fraction
+        in: query
+        description: The fraction of the request
+        required: false
+        type: String
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Failure
+
+  /speechesofagendaitem:
+    get:
+      tags:
+      - Parliament Sentiment Radar - Abschlussprojekt
+      summary: Returns all speeches of agendaitem
+      operationId: getSpeechesOfAgendaItem(period, protocol, number)
+      consumes:
+      - application/json
+      parameters:
+      - name: period
+        in: query
+        description: The legislature period of the requested speeches
+        required: true
+        type: Integer
+      - name: protocol
+        in: query
+        description: The protocol of the requested speeches
+        required: true
+        type: Integer
+      - name: number
+        in: query
+        description: The number (Tagesordnungspunkt) of the requested speeches
+        required: true
+        type: Integer
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Failure
+
+  /nlpspeechbyid:
+    get:
+      tags:
+      - Parliament Sentiment Radar - Abschlussprojekt
+      summary: Returns the analysed nlp-speech of a speech-id
+      operationId: getNLPSpeechById(speechId)
+      consumes:
+      - application/json
+      parameters:
+      - name: id
+        in: query
+        description: The id of the requested nlp-speech
+        required: true
+        type: String
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Failure
+
+  /speakerportait:
+    get:
+      tags:
+      - Parliament Sentiment Radar - Abschlussprojekt
+      summary: Returns the portrait of a speaker
+      operationId: getSpeakerPortrait(speakerId)
+      consumes:
+      - image/jpeg
+      parameters:
+      - name: id
+        in: query
+        description: The id of the speaker
+        required: true
+        type: String
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Failure
+
+  /nlp:
+    get:
+      tags:
+      - Parliament Sentiment Radar - Abschlussprojekt
+      summary: Returns results of the nlp-speeches
+      operationId: getNLP(limit, from, to, nlp_type, party, fraction, speakerid)
+      consumes:
+      - application/json
+      parameters:
+      - name: limit
+        in: query
+        description: The limit of the request (top n results are displayed)
+        required: false
+        type: String
+      - name: from
+        in: query
+        description: The start-date of the request (yyyy-MM-dd)
+        required: true
+        type: String
+      - name: to
+        in: query
+        description: The end-date of the request (yyyy-MM-dd)
+        required: true
+        type: String
+      - name: nlptype
+        in: query
+        description: The nlp-type of the request
+        required: true
+        type: String
+      - name: party
+        in: query
+        description: The party of the request
+        required: false
+        type: String
+      - name: fraction
+        in: query
+        description: The fraction of the request
+        required: false
+        type: String
+      - name: speakerid
+        in: query
+        description: The speakerid of the request
+        required: false
+        type: String
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Failure
+
+
+  /speeches:
+    get:
+      tags:
+      - Parliament Sentiment Radar - Abschlussprojekt
+      summary: Returns all speeches that contain a specific searchterm
+      operationId: getSeeches(searchterm)
+      consumes:
+      - application/json
+      parameters:
+      - name: searchterm
+        in: query
+        description: The searchterm of the speeches
+        required: true
+        type: String
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Failure
+
+definitions:
+  JSONObject:
+    type: object
+    properties:
+      empty:
+        type: boolean
