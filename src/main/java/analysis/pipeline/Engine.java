@@ -39,7 +39,7 @@ public class Engine implements Engine_Interface {
             ));
 
             //String sPOSMapFile = Engine.class.getClassLoader().getResource("am_posmap.txt").getPath();
-            String sPOSMapFile = "/home/bm-nlp-pipeline/Desktop/Bundestags-Mine/BundestagMine/JAVA/src/resources/am_posmap.txt";
+            //String sPOSMapFile = "/home/bm-nlp-pipeline/Desktop/Bundestags-Mine/BundestagMine/JAVA/src/resources/am_posmap.txt";
             /*pipeline.add(createEngineDescription(LabelAnnotatorDocker.class,
                     LabelAnnotatorDocker.PARAM_FASTTEXT_K, 100,
                     LabelAnnotatorDocker.PARAM_CUTOFF, false,
