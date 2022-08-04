@@ -37,8 +37,7 @@ public class ParliamentAPI {
      * @param baseAjaxUrl the AJAX Url that's called by the parliament website
      */
     public ArrayList<String> getHrefs(String baseAjaxUrl) throws IOException {
-        ArrayList<String> hrefs = new ArrayList<>();
-        ArrayList<String> relevantHrefs = new ArrayList<>();
+        var relevantHrefs = new ArrayList<String>();
         Elements elements = null;
         int offset = 0;
         do {
@@ -68,14 +67,12 @@ public class ParliamentAPI {
     /**
      * Get all the 19th and 20th legislature period documents.
      */
-    public ArrayList<org.w3c.dom.Document> getAllDocuments() throws ParserConfigurationException, IOException, SAXException, InterruptedException {
+    public ArrayList<org.w3c.dom.Document> fetchNewProtocols(int newestStoredProtocol) throws ParserConfigurationException, IOException, SAXException, InterruptedException {
         ArrayList<org.w3c.dom.Document> documents = new ArrayList<>();
         System.out.println("Getting 20th Legislature Period Documents:");
         int counter = 1;
         for (String url : this.urlsTwenty){
-            // TODO: CHANGE THE CURRENT PROTOCOLS COUNT HERE WHEN REIMPORTING.
-            // 37 ist aktuell.
-            if(counter > 37){
+            if(counter > newestStoredProtocol){
                 System.out.println(counter + " / " + this.urlsTwenty.size());
                 Thread.sleep(500);
                 InputStream stream = new URL(url).openStream();
