@@ -75,8 +75,7 @@ public class ProcessorNLP implements ProcessorNLP_Interface {
      */
     public void processAll() throws JSONException, UIMAException {
         try {
-            MongoDBConnectionHandler handler = new MongoDBConnectionHandler(
-                    "src/main/database.properties");
+            MongoDBConnectionHandler handler = new MongoDBConnectionHandler();
 
             System.out.println(ANSI_GREEN + "Fetching documents..." + ANSI_RESET);
             MongoDatabase db = handler.getDb();

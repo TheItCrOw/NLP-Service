@@ -14,6 +14,7 @@ import com.sleepycat.je.Database;
 import database.Deputy_Mongo;
 import database.MongoDBConnectionHandler;
 //import org.apache.commons.lang.StringEscapeUtils;
+import database.MssqlDbConnectionHandler;
 import export.DatabaseExporter;
 import org.bson.types.ObjectId;
 import org.codehaus.jettison.json.JSONException;
@@ -38,8 +39,10 @@ public class View {
     static boolean exportDatabase = false;
     public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException, ParseException, InterruptedException, org.json.simple.parser.ParseException {
 
-        MongoDBConnectionHandler handler = new MongoDBConnectionHandler("src/main/database.properties");
+        MongoDBConnectionHandler handler = new MongoDBConnectionHandler();
+        var db = new MssqlDbConnectionHandler();
 
+        // This was only used when I synched the MongoDB to the MSSQL. We dont need this here anymore.
         if(exportDatabase){
             DatabaseExporter.exportCollection("annotation", "\\\\localnas\\home\\Drive\\Bundestag Mining\\19. Legislaturperiode Protokolle Data", handler.getDb());
             DatabaseExporter.exportCollection("answer", "\\\\localnas\\home\\Drive\\Bundestag Mining\\19. Legislaturperiode Protokolle Data", handler.getDb());
@@ -49,6 +52,7 @@ public class View {
             return;
         }
 
+        // Fetch new protocols here.
         if (handler.collectionDoesNotExist("Protocols")){
             ParliamentAPI api = new ParliamentAPI();
             ArrayList<Document> documents = api.getAllDocuments();

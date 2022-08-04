@@ -32,41 +32,19 @@ public class MongoDBConnectionHandler {
     String password;
     MongoDatabase db;
 
-    public MongoDBConnectionHandler(String propertiesFilePath){
-        this.db = this.getMongoDb(propertiesFilePath);
+    public MongoDBConnectionHandler(){
+        this.db = this.getMongoDb();
     }
 
     public MongoDatabase getDb(){
         return this.db;
     }
 
-    MongoDatabase getMongoDb(String propertiesFilePath){
+    MongoDatabase getMongoDb(){
         /**
          * Return a MongoDatabase object based on the credentials in the database.properties file.
          */
-        try (InputStream input = new FileInputStream(propertiesFilePath)) {
-            Properties prop = new Properties();
-
-            prop.load(input);
-
-            /*
-            MongoCredential credential = MongoCredential.createCredential(
-                    prop.getProperty("db.username"),
-                    prop.getProperty("db.username"),
-                    prop.getProperty("db.password").toCharArray()
-            );
-
-            MongoClientSettings settings = MongoClientSettings.builder()
-                    .credential(credential)
-                    .applyToSslSettings(builder -> builder.enabled(false))
-                    .applyToClusterSettings(builder ->
-                            builder.hosts(List.of(new ServerAddress(prop.getProperty("db.url"), Integer.parseInt(prop.getProperty("db.port"))))))
-                    .build();
-
-            MongoClient client = MongoClients.create(settings);
-            return client.getDatabase(prop.getProperty("db.database"));
-            */
-
+        try{
             ConnectionString connectionString = new ConnectionString("mongodb+srv://TheItCrOW:w{KbL*GmWJ}a=N6iykUyGi;{L0I!s7j^@cluster0.bjqsv.mongodb.net/?retryWrites=true&w=majority");
             MongoClientSettings settings = MongoClientSettings.builder()
                     .applyConnectionString(connectionString)
@@ -74,7 +52,7 @@ public class MongoDBConnectionHandler {
             MongoClient mongoClient = MongoClients.create(settings);
             MongoDatabase database = mongoClient.getDatabase("bundestagMining");
             return database;
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         return null;
