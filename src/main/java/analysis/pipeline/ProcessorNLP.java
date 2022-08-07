@@ -32,7 +32,7 @@ import java.util.Collection;
 /**
  * Processes all speeches and pushes the result to the DB
  */
-public class ProcessorNLP implements ProcessorNLP_Interface {
+public class ProcessorNLP {
     public static final String ANSI_GREEN = "\u001B[32m";
     public static final String ANSI_RESET = "\u001B[0m";
     ArrayList<JSONObject> col = new ArrayList<>();
@@ -40,15 +40,13 @@ public class ProcessorNLP implements ProcessorNLP_Interface {
     /**
      * Processes a Speech and injects the result into the given JSONObject
      *
-     * @param index as Integer
      * @param ae as AnalysisEngine
      * @return speechJSON as JSONObject
      * @throws JSONException .
      * @throws UIMAException .
      */
-    public JSONObject processSpeech(int index, AnalysisEngine ae) throws JSONException, UIMAException {
+    public JSONObject processSpeech(JSONObject speechJSON, AnalysisEngine ae) throws JSONException, UIMAException {
         //text to json
-        JSONObject speechJSON = this.col.get(index);
         JSONObject s =  speechJSON.getJSONObject("segments");
         JSONArray segments = s.toJSONArray(s.names());
 
@@ -98,14 +96,14 @@ public class ProcessorNLP implements ProcessorNLP_Interface {
             Engine engine = new Engine();
             AnalysisEngine ae = engine.initEngine();
 
-
             for (int i = resumeCount; i < this.col.size(); i++) {
                 System.out.println(ANSI_GREEN + "Processing Speech: " + i + " from " + this.col.size() + ANSI_RESET);
-                JSONObject jo = processSpeech(i, ae);
-                handler.pushNLPResultToDB(jo);
+                // Process here
+                //JSONObject jo = processSpeech(i, ae);
+                //handler.pushNLPResultToDB(jo);
             }
 
-        } catch (MongoSocketWriteException | UIMAException | JSONException e) {
+        } catch (MongoSocketWriteException| JSONException e) {
             e.printStackTrace();
         }
     }

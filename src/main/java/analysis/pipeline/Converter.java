@@ -90,6 +90,7 @@ public class Converter implements Converter_Interface {
             jo.put("begin", entity.getBegin());
             jo.put("end", entity.getEnd());
             jo.put("value", entity.getValue());
+            jo.put("coveredText", entity.getCoveredText());
         } catch(JSONException e) {
             e.printStackTrace();
         }

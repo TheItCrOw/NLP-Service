@@ -12,7 +12,7 @@ import parliament.AgendaItem;
 public class AgendaItem_Mongo extends AgendaItem implements AgendaItem_Interface {
 
     public AgendaItem_Mongo(AgendaItem item){
-        super(item.getProtocol(), item.getNumber());
+        super(item.getProtocol(), item.getNumber(), item.getName());
     }
 
     /**
@@ -21,6 +21,7 @@ public class AgendaItem_Mongo extends AgendaItem implements AgendaItem_Interface
     public JSONObject toJSONObject() throws JSONException {
         return new JSONObject()
                 .put("protocol", this.getProtocol().getNumber())
+                .put("name", this.getName())
                 .put("legislaturePeriod", this.getLegislaturePeriod())
                 .put("number", this.getNumber());
     }

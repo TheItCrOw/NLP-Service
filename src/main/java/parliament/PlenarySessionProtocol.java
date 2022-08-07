@@ -5,6 +5,10 @@
 package parliament;
 
 import interfaces.PlenarySessionProtocol_Interface;
+import org.json.JSONObject;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class PlenarySessionProtocol implements PlenarySessionProtocol_Interface {
@@ -13,8 +17,13 @@ public class PlenarySessionProtocol implements PlenarySessionProtocol_Interface 
     int number;
     String title;
     int agendaItemsCount;
+    ArrayList<org.codehaus.jettison.json.JSONObject> nlpSpeeches;
 
-    public PlenarySessionProtocol(Date date, Integer legislaturePeriod, Integer number, String title, int agendaItemsCount){
+    public PlenarySessionProtocol(Date date,
+                                  Integer legislaturePeriod,
+                                  Integer number,
+                                  String title,
+                                  int agendaItemsCount){
         this.date = date;
         this.legislaturePeriod = legislaturePeriod;
         this.number = number;
@@ -31,6 +40,9 @@ public class PlenarySessionProtocol implements PlenarySessionProtocol_Interface 
                 .replace("\n", "")
                 .replace(" (neu)", "");
     }
+
+    public void setNLPSpeeches(ArrayList<org.codehaus.jettison.json.JSONObject> nlpSpeeches) { this.nlpSpeeches = nlpSpeeches;}
+    public ArrayList<org.codehaus.jettison.json.JSONObject> getNLPSpeeches() { return nlpSpeeches;}
 
     /**
      * Get the protocol date.

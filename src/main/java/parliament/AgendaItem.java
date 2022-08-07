@@ -10,9 +10,11 @@ public class AgendaItem implements AgendaItem_Interface {
     PlenarySessionProtocol protocol;
     int legislaturePeriod;
     int number;
+    String name;
 
-    public AgendaItem(PlenarySessionProtocol protocol, int number){
+    public AgendaItem(PlenarySessionProtocol protocol, int number, String name){
         this.legislaturePeriod = protocol.getLegislaturePeriod();
+        this.name = name;
         this.protocol = protocol;
         this.number = number;
     }
@@ -37,4 +39,6 @@ public class AgendaItem implements AgendaItem_Interface {
     public int getLegislaturePeriod() {
         return this.legislaturePeriod;
     }
+
+    public String getName() {return this.name;}
 }

@@ -1,10 +1,16 @@
 package database;
 
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+import parliament.PlenarySessionProtocol;
+
 import java.io.*;
 import java.sql.*;
+import java.time.ZonedDateTime;
 import java.util.Properties;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.UUID;
 
 
 public class MssqlDbConnectionHandler {
@@ -55,5 +61,15 @@ public class MssqlDbConnectionHandler {
             return rs.getInt("Number");
         }
         return 0;
+    }
+
+    public void insertImportedProtocol(PlenarySessionProtocol protocol) throws JSONException, SQLException {
+        var asJson = new PlenarySessionProtocol_Mongo(protocol).toJSONObject().toString();
+        var curDate = ZonedDateTime.now();
+        var st = db.createStatement();
+        var sqlStr = "insert into ImportedProtocols (Id, ImportedDate, ProtocolJson) values ("
+            + UUID.randomUUID() + "," + curDate + "," + asJson + ");";
+        var rs = st.executeQuery(sqlStr);
+        var xd = "";
     }
 }

@@ -11,7 +11,12 @@ import parliament.PlenarySessionProtocol;
 public class PlenarySessionProtocol_Mongo extends PlenarySessionProtocol implements PlenarySessionProtocol_Interface {
 
     public PlenarySessionProtocol_Mongo(PlenarySessionProtocol protocol){
-        super(protocol.getDate(), protocol.getLegislaturePeriod(), protocol.getNumber(), protocol.getTitle(), protocol.getAgendaItemsCount());
+        super(protocol.getDate(),
+                protocol.getLegislaturePeriod(),
+                protocol.getNumber(),
+                protocol.getTitle(),
+                protocol.getAgendaItemsCount());
+        this.setNLPSpeeches(protocol.getNLPSpeeches());
     }
 
     /**
@@ -23,6 +28,7 @@ public class PlenarySessionProtocol_Mongo extends PlenarySessionProtocol impleme
                 .put("legislaturePeriod", this.getLegislaturePeriod())
                 .put("number", this.getNumber())
                 .put("title", this.getTitle())
+                .put("nlpSpeeches", this.getNLPSpeeches())
                 .put("agendaItemsCount", this.getAgendaItemsCount());
     }
 }

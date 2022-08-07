@@ -4,13 +4,12 @@ import java.util.*;
 
 //import api.RestfulAPI;
 //import api.RestfulGeneral;
-import database.Deputy_Mongo;
+import analysis.pipeline.Engine;
+import analysis.pipeline.ProcessorNLP;
 //import org.apache.commons.lang.StringEscapeUtils;
 import database.MssqlDbConnectionHandler;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import database.Speech_Mongo;
+import org.codehaus.jettison.json.JSONObject;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -56,45 +55,46 @@ public class View {
                 protocols[i] = parser.populatePlenarySessionProtocol(documents.get(i));
             }
 
-            ArrayList<Deputy_Mongo> deputies_mongo = new ArrayList<>();
-            Set<Deputy> deputies = parser.getSpeakers();
-            NodeList nodeList = api.getMetaData().getElementsByTagName("MDB");
-            for (Deputy deputy : deputies) {
-                String academicTitle = "";
-                String historySince = "";
-                String birthDate = "";
-                String deathDate = "";
-                String gender = "";
-                String maritalStatus = "";
-                String religion = "";
-                String profession = "";
-                String party = "";
+            // This returns the speakers of the 'rednerliste' of each protocol
+            // We build the deputies with their metadata here of each new protocol. We decide later whether we want to import
+            // the deputy or if its already imported.
+            var deputies = parser.getSpeakers();
+            var nodeList = api.getMetaData().getElementsByTagName("MDB");
+            var deputies_mongo = parser.parseDeputiesToMongoDeputies(deputies, nodeList);
 
-                for (int i = 0; i < nodeList.getLength(); i++) {
-                    Element mdb = (Element) nodeList.item(i);
-                    String id = mdb.getElementsByTagName("ID").item(0).getTextContent();
+            // Parse the speeches to the protocols.
+            var speeches = parser.getAllSpeeches();
 
-                    if (!deputy.getId().equals(id)) continue;
+            // Now run the protocols through the nlp pipeline.
+            // Create the engine
+            var engine = new Engine();
+            var pipeline = engine.initEngine();
+            var processor = new ProcessorNLP();
+            // Process each protocol at a time
+            for(int i = 0; i < protocols.length; i++){
+                var curProtocol = protocols[i];
+                // Get the speeches of the protocol
+                var speechesOfProtocol = speeches.stream()
+                        .filter(s -> s.getAgendaItem().getProtocol().getNumber() == curProtocol.getNumber()
+                                && s.getAgendaItem().getProtocol().getLegislaturePeriod() == curProtocol.getLegislaturePeriod())
+                        .toList();
 
-                    Node names = mdb.getElementsByTagName("NAMEN").item(0);
-                    Element name = (Element) ((Element) names).getElementsByTagName("NAME").item(0);
-                    Element biography = (Element) mdb.getElementsByTagName("BIOGRAFISCHE_ANGABEN").item(0);
-                    academicTitle = name.getElementsByTagName("AKAD_TITEL").item(0).getTextContent();
-                    historySince = name.getElementsByTagName("HISTORIE_VON").item(0).getTextContent();
-                    birthDate = biography.getElementsByTagName("GEBURTSDATUM").item(0).getTextContent();
-                    deathDate = biography.getElementsByTagName("STERBEDATUM").item(0).getTextContent();
-                    gender = biography.getElementsByTagName("GESCHLECHT").item(0).getTextContent();
-                    maritalStatus = biography.getElementsByTagName("FAMILIENSTAND").item(0).getTextContent();
-                    religion = biography.getElementsByTagName("RELIGION").item(0).getTextContent();
-                    profession = biography.getElementsByTagName("BERUF").item(0).getTextContent();
-                    party = biography.getElementsByTagName("PARTEI_KURZ").item(0).getTextContent();
+                // analyse them
+                ArrayList<JSONObject> nlpSpeechesOfProtocol = new ArrayList<>();
+                for(int k =0; k < speechesOfProtocol.size(); k++){
+                    var curSpeech = speechesOfProtocol.get(k);
+                    var nlpSpeech = processor.processSpeech(new Speech_Mongo(curSpeech).toJSONObject(), pipeline);
+                    nlpSpeechesOfProtocol.add(nlpSpeech);
                 }
-                deputies_mongo.add(new Deputy_Mongo(deputy, academicTitle, historySince, birthDate, deathDate, gender, maritalStatus, religion, profession, party));
+                // Set the nlp speeches to the protocol
+                curProtocol.setNLPSpeeches(nlpSpeechesOfProtocol);
+                // Store the imported protocol in the mssql db.
+                db.insertImportedProtocol(curProtocol);
+                var xd = "";
             }
 
             // Insert the protocol here
             // TODO: Check this. I dont know how the getAllSpeeches and deputies_mogno play in here.
-            var speeches = parser.getAllSpeeches();
             //handler.insertProtocols(protocols, parser.getAllSpeeches(), deputies_mongo);
         } catch (Exception e) {
             e.printStackTrace();

@@ -9,6 +9,7 @@
  */
 package parsing;
 
+import database.Deputy_Mongo;
 import org.checkerframework.checker.units.qual.A;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -28,6 +29,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -45,6 +47,8 @@ public class XMLParser {
      * and return them.
      */
     public Set<Deputy> getSpeakers(){
+        // This right here is the reason why we dont have X Angela Merkels, because of the Hashset...
+        // This also explains why we have 2 Angela Merkels: One for 19. and one for 20. LP.
         Set<Deputy> deputies = new HashSet<Deputy>();
         for (Document doc : this.documents){
             Element speakerList = (Element) doc.getElementsByTagName("rednerliste").item(0);
@@ -63,9 +67,9 @@ public class XMLParser {
                 }
                 Fraction fraction = new Fraction(fractionName);
                 Deputy deputy = new Deputy(
-                        firstName=firstName,
-                        lastName=lastName,
-                        fraction=fraction,
+                        firstName,
+                        lastName,
+                        fraction,
                         speaker.getAttribute("id")
                 );
                 deputies.add(deputy);
@@ -77,18 +81,61 @@ public class XMLParser {
         return deputies;
     }
 
+    /***
+     * Creates mongo debuties by adding the metadata to the deputy.
+     * @param deputies
+     * @param nodeList
+     * @return
+     */
+    public ArrayList<Deputy_Mongo> parseDeputiesToMongoDeputies(Set<Deputy> deputies, NodeList nodeList){
+        var deputiesMongo = new ArrayList<Deputy_Mongo>();
+        for (Deputy deputy : deputies) {
+            String academicTitle = "";
+            String historySince = "";
+            String birthDate = "";
+            String deathDate = "";
+            String gender = "";
+            String maritalStatus = "";
+            String religion = "";
+            String profession = "";
+            String party = "";
+
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Element mdb = (Element) nodeList.item(i);
+                String id = mdb.getElementsByTagName("ID").item(0).getTextContent();
+
+                if (!deputy.getId().equals(id)) continue;
+
+                Node names = mdb.getElementsByTagName("NAMEN").item(0);
+                Element name = (Element) ((Element) names).getElementsByTagName("NAME").item(0);
+                Element biography = (Element) mdb.getElementsByTagName("BIOGRAFISCHE_ANGABEN").item(0);
+                academicTitle = name.getElementsByTagName("AKAD_TITEL").item(0).getTextContent();
+                historySince = name.getElementsByTagName("HISTORIE_VON").item(0).getTextContent();
+                birthDate = biography.getElementsByTagName("GEBURTSDATUM").item(0).getTextContent();
+                deathDate = biography.getElementsByTagName("STERBEDATUM").item(0).getTextContent();
+                gender = biography.getElementsByTagName("GESCHLECHT").item(0).getTextContent();
+                maritalStatus = biography.getElementsByTagName("FAMILIENSTAND").item(0).getTextContent();
+                religion = biography.getElementsByTagName("RELIGION").item(0).getTextContent();
+                profession = biography.getElementsByTagName("BERUF").item(0).getTextContent();
+                party = biography.getElementsByTagName("PARTEI_KURZ").item(0).getTextContent();
+            }
+            deputiesMongo.add(new Deputy_Mongo(deputy, academicTitle, historySince, birthDate, deathDate, gender, maritalStatus, religion, profession, party));
+        }
+        return deputiesMongo;
+    }
+
     /**
      * Every XML document contains a list of <rede> Tag. Use them to populate a list of Speech objects
      * and return them.
      */
     public ArrayList<Speech> getSpeeches(int documentId, int itemId) throws ParseException {
-        Document doc = this.documents.get(documentId);
-        PlenarySessionProtocol protocol = this.populatePlenarySessionProtocol(doc);
-        AgendaItem item = new AgendaItem(protocol, itemId + 1);
-        Element agendaItem = (Element) doc.getElementsByTagName("tagesordnungspunkt").item(itemId);
+        var doc = this.documents.get(documentId);
+        var protocol = this.populatePlenarySessionProtocol(doc);
+        var agendaItem = (Element) doc.getElementsByTagName("tagesordnungspunkt").item(itemId);
         if (agendaItem == null){
             return null;
         }
+        var item = new AgendaItem(protocol, itemId + 1, agendaItem.getAttribute("top-id"));
 
         NodeList docSpeeches = agendaItem.getElementsByTagName("rede");
         ArrayList<Speech> speeches = new ArrayList<Speech>();
@@ -143,6 +190,7 @@ public class XMLParser {
         String date = ((Element) about.getElementsByTagName("datum").item(0)).getAttribute("date");
         SimpleDateFormat sdtF = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY);
         Date dateFormatiert = sdtF.parse(date);
+
         return new PlenarySessionProtocol(
                 dateFormatiert,
                 legislaturePeriod,
@@ -157,8 +205,8 @@ public class XMLParser {
      * This is useful to avoid excessive business logic in the View class.
      */
     public ArrayList<Speech> getAllSpeeches() throws ParseException, ParserConfigurationException, IOException, SAXException {
-        ArrayList<Speech> allSpeeches = new ArrayList<Speech>();
-        ArrayList<Speech> currentSpeeches = new ArrayList<Speech>();
+        var allSpeeches = new ArrayList<Speech>();
+        var currentSpeeches = new ArrayList<Speech>();
         int docNumber = 1;
         while (docNumber <= this.documents.size()){
             int itemNumber = 1;
