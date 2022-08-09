@@ -37,7 +37,8 @@ public class View {
 
             // Fetch new protocols.
             System.out.println("Looking for new protocols...");
-            var newestProtocol = db.getLatestProtocolNumber(20);
+            //var newestProtocol = db.getLatestProtocolNumber(20);
+            var newestProtocol = 47;
             System.out.println("Newest stored protocol is Protocol " + newestProtocol);
             var api = new ParliamentAPI();
             var documents = api.fetchNewProtocols(newestProtocol);
@@ -86,10 +87,8 @@ public class View {
                     var nlpSpeech = processor.processSpeech(new Speech_Mongo(curSpeech).toJSONObject(), pipeline);
                     nlpSpeechesOfProtocol.add(nlpSpeech);
                 }
-                // Set the nlp speeches to the protocol
-                curProtocol.setNLPSpeeches(nlpSpeechesOfProtocol);
                 // Store the imported protocol in the mssql db.
-                db.insertImportedProtocol(curProtocol);
+                db.insertImportedProtocol(curProtocol, nlpSpeechesOfProtocol);
                 var xd = "";
             }
 
