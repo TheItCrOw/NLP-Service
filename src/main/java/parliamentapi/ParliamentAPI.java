@@ -72,7 +72,7 @@ public class ParliamentAPI {
         System.out.println("Getting 20th Legislature Period Documents:");
         int counter = 1;
         for (String url : this.urlsTwenty){
-            if(counter > newestStoredProtocol){
+            if(counter <= this.urlsTwenty.size() - newestStoredProtocol){
                 System.out.println(counter + " / " + this.urlsTwenty.size());
                 Thread.sleep(500);
                 InputStream stream = new URL(url).openStream();

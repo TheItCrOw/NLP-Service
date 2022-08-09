@@ -59,6 +59,30 @@ public class MssqlDbConnectionHandler {
     }
 
     /***
+     * Inserts the deputies into the imported table.
+     */
+    public void insertImportedDeputies(ArrayList<Deputy_Mongo> deputies) throws SQLException, JSONException {
+        var statement = db.createStatement();
+        var query = "";
+        var dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        var date = dtf.format(LocalDateTime.now());
+
+        for(int i = 0; i < deputies.size(); i++){
+            var cur = deputies.get(i);
+            // First, add the protocol to the statement.
+            query += buildImportedEntityInsertString(
+                    UUID.randomUUID().toString(),
+                    date,
+                    cur.toJSONObject().toString(),
+                    2, // Deputy = 0
+                    "00000000-0000-0000-0000-000000000000"
+            );
+        }
+        // Save them.
+        statement.execute(query);
+    }
+
+    /***
      * Adds a protocol along with its nlp speeches into the database.
      * @param protocol
      * @param nlpSpeeches

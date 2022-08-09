@@ -37,8 +37,7 @@ public class View {
 
             // Fetch new protocols.
             System.out.println("Looking for new protocols...");
-            //var newestProtocol = db.getLatestProtocolNumber(20);
-            var newestProtocol = 47;
+            var newestProtocol = db.getLatestProtocolNumber(20);
             System.out.println("Newest stored protocol is Protocol " + newestProtocol);
             var api = new ParliamentAPI();
             var documents = api.fetchNewProtocols(newestProtocol);
@@ -55,24 +54,39 @@ public class View {
             for (int i = 0; i < documents.size(); i++) {
                 protocols[i] = parser.populatePlenarySessionProtocol(documents.get(i));
             }
+            System.out.println("Parsing successful!");
 
             // This returns the speakers of the 'rednerliste' of each protocol
             // We build the deputies with their metadata here of each new protocol. We decide later whether we want to import
             // the deputy or if its already imported.
+            System.out.println("Build potential new deputies...");
             var deputies = parser.getSpeakers();
             var nodeList = api.getMetaData().getElementsByTagName("MDB");
             var deputies_mongo = parser.parseDeputiesToMongoDeputies(deputies, nodeList);
+            System.out.println("Trying to store " + deputies_mongo.size() + " deputies.");
+            // Store the deputies
+            try{
+                db.insertImportedDeputies(deputies_mongo);
+                System.out.println("Stored!.");
+            } catch(Exception ex){
+                System.out.println("Storing failed...");
+                ex.printStackTrace();
+            }
 
             // Parse the speeches to the protocols.
+            System.out.println("Trying to parse the new speeches...");
             var speeches = parser.getAllSpeeches();
+            System.out.println("Parsed " + speeches.size() + " new speeches.");
 
-            // Now run the protocols through the nlp pipeline.
+            // Now run the protocols through the nlp pipeline and store them.
             // Create the engine
+            System.out.println("Build the engine and run the pipeline.");
             var engine = new Engine();
             var pipeline = engine.initEngine();
             var processor = new ProcessorNLP();
             // Process each protocol at a time
             for(int i = 0; i < protocols.length; i++){
+                System.out.println("Analysing protocol number " + i);
                 var curProtocol = protocols[i];
                 // Get the speeches of the protocol
                 var speechesOfProtocol = speeches.stream()
@@ -87,14 +101,17 @@ public class View {
                     var nlpSpeech = processor.processSpeech(new Speech_Mongo(curSpeech).toJSONObject(), pipeline);
                     nlpSpeechesOfProtocol.add(nlpSpeech);
                 }
-                // Store the imported protocol in the mssql db.
-                db.insertImportedProtocol(curProtocol, nlpSpeechesOfProtocol);
-                var xd = "";
-            }
 
-            // Insert the protocol here
-            // TODO: Check this. I dont know how the getAllSpeeches and deputies_mogno play in here.
-            //handler.insertProtocols(protocols, parser.getAllSpeeches(), deputies_mongo);
+                System.out.println("Analysed protocol with their speeches - trying to store them.");
+                // Store the imported protocol in the mssql db.
+                try{
+                    db.insertImportedProtocol(curProtocol, nlpSpeechesOfProtocol);
+                    System.out.println("Stored protocol " + curProtocol.getTitle());
+                } catch(Exception ex){
+                    System.out.println("Storing failed...");
+                    ex.printStackTrace();
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
